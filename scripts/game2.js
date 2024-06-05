@@ -92,9 +92,11 @@ function createCards(numSymbols, symbolsCurrentGame) {
       flippedCardsThisTurn.push(this.id)
       flipCards()
     })
-    card.setAttribute("id", i)
 
     card2.classList.add("card");
+
+    // do I care about ids?
+    card.setAttribute("id", i)
     card2.setAttribute("id", i + 10)
 
     card2.addEventListener("click", function() {
@@ -103,9 +105,19 @@ function createCards(numSymbols, symbolsCurrentGame) {
       flipCards()
     })
 
+    var pElement = document.createElement("span")
+    var pElement2 = document.createElement("span")
     // put symbol on card
-    card.innerHTML = symbolsCurrentGame[i];
-    card2.innerHTML = symbolsCurrentGame[i];
+    pElement.innerHTML = symbolsCurrentGame[i];
+    // pElement.classList.add(symbolsCurrentGame[i])
+    pElement2.innerHTML = symbolsCurrentGame[i];
+    console.log("pElement ->", pElement)
+    card.appendChild(pElement)
+    card2.appendChild(pElement2)
+
+
+    // card.innerHTML = symbolsCurrentGame[i];
+    // card2.innerHTML = symbolsCurrentGame[i];
 
     // add cards to array
     cards.push(card);
@@ -155,9 +167,10 @@ function checkForMatch(card1, card2) {
 
   // update turn counter
   document.getElementsByClassName("turnCounter")[0].innerHTML = "Turns: " + turns;
-
+  console.log("flipped1 ->", flipped1.firstChild.textContent)
+  console.log("flipped2 ->", flipped2.firstChild)
   // check if the cards match
-  if (flipped1.innerHTML === flipped2.innerHTML) {
+  if (flipped1.firstChild.textContent === flipped2.firstChild.textContent) {
     // update matches counter
     matches--;
 
@@ -210,23 +223,42 @@ function resetGame() {
 // create an embedded stylesheet
 var style = document.createElement("style");
 style.innerHTML = `
+  h1 {
+    text-align: center;
+    font-style: italic;
+    padding: 20px 0;
+  }
   .card {
     display: inline-block;
     border: 2px solid purple;
-    width: 50px;
-    height: 50px;
-    margin: 5px;
+    width: 80px;
+    padding: 0 5px;
+    height: 80px;
+    margin: 5px 20px;
     text-align: center;
     line-height: 50px;
   }
   .flipped {
-    border: 4px solid white;
+    display: inline-block;
+    border: 2px solid white;
     background-color: pink;
   }
+  .card span {
+    display: none;
+  }
+  
+  .flipped span {
+    display: inline-block;
+  }
+  
   .gameBoard {
+    display: grid;
+    width: 60%;
+    margin: auto;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
     border: 4px solid black;
     background-color: aliceblue;
-    height: 200px;
+    // height: 200px;
   }
 `;
 
