@@ -1,122 +1,352 @@
 "use strict"
 
-
-// TODO: (5 points) Setup your JavaScript accordingly
-//    All of your JavaScript should go in an external file (game.js)
-//    All of your JavaScript, with the exception of adding an event listener for the first click, should be within functions
-//      (global variables can be used to keep track of the matches/wins and number of card flips).
-
 // GLOBAL VARIABLES
-var matches = 0;
 var flips = 0;
+var turns = 0;
+var animalSet = ['Cat', 'Dog', 'Bat', 'Mouse', 'Owl', 'Fish', 'Turtle', 'Sloth'];
+document.createElement("img");
 
-// add listener for 'Start Game' button
-document.getElementById("startButton").addEventListener("click", startGame)
+var symbolSet = ['!', '@', '#', '$', '%', '^', '&', '*'];
+var numSymbols = 0;
+var matches = 0;
+var cards = []
+var flippedCardsThisTurn = []
 
-// TODO:  (10 points) Start with a form that allows the user to pick the number of symbols to be used
-//    - Add an event listener to listen for clicks on the startButton
-//    - When the "Play Now" button is pressed, the event listener should:
-//      - Determine the value of the input field (you can use whatever method you like to retrieve this value)
-//      - The number of symbols should have a max value of 8 (though no error will show up, the game will just start with the max number of symbols if the input is over 8)
-//      - The symbols can be any character set you'd like (I used !@#$%^&*)
-//      - The startForm division should be removed (or hidden if you're comfortable manipulating style sheets)
-//      - The game board should be displayed
+
+window.addEventListener("load", function() {
+  // create and hide winning screen on load
+  var winningScreen = document.createElement("div")
+  var winningScreen2 = document.createElement("div")
+  winningScreen.classList.add("winningScreen")
+  winningScreen2.classList.add("winningScreenButton")
+  winningScreen.setAttribute("id", "winningScreen")
+  winningScreen.innerHTML = `You Won!`
+  var playAgainButton = document.createElement("button")
+  playAgainButton.innerHTML = "Play Again"
+  playAgainButton.addEventListener("click", resetGame)
+  winningScreen2.appendChild(playAgainButton)
+  winningScreen.style.display = "none";
+  winningScreen2.style.display = "none";
+  winningScreen2.setAttribute("id", "winningScreenButton")
+
+  document.body.appendChild(winningScreen)
+  document.body.appendChild(winningScreen2)
+
+  // add button
+  var animalsButton = document.createElement("button");
+  animalsButton.innerHTML = "Match Animals";
+  animalsButton.addEventListener("click", function() {
+    symbolSet = animalSet;
+    startGame()
+  })
+
+  var symbolsButton = document.getElementById("startButton");
+  symbolsButton.innerHTML = "Match Symbols";
+  symbolsButton.addEventListener("click", function() {
+    symbolSet = ['!', '@', '#', '$', '%', '^', '&', '*'];
+    startGame()
+  })
+
+  document.getElementById("startForm").appendChild(animalsButton)
+})
+
+
+// =============================================== START GAME LOGIC ===============================================
 
 function startGame() {
-  var numSymbols = document.getElementById("numSymbols").value;
+
+  // get user input
+  numSymbols = document.getElementById("numSymbols").value;
+  matches = document.getElementById("numSymbols").value;
 
   if (numSymbols > 8) {
     numSymbols = 8;
   }
-  var numCards = numSymbols * 2;
+
+  // hide start form
   document.getElementById("startForm").style.display = "none";
   generateGameBoard(numSymbols);
 }
 
 
-// TODO: (10 points) Generate a game board
-//    - Based on the number submitted, generate a game board
-//    - The number of cards should be equal to 2 x the number of symbols (you'll need matching pairs, of course!)
-//    - The cards should be arranged as a square if possible (for example, 8 symbols means 16 cards, which means a 4 x 4 grid)
-//    - If they cannot be a square (there aren't an equal number of columns and rows), arrange them in any way you like
-//    - Regardless of the number of cards, the arrangement must be in a grid. Consider using:
-//      - display: inline-block;
-//      - a table
-//      - floated elements
+// =============================================== CREATE GAME BOARD ===============================================
 
 function generateGameBoard(numSymbols) {
-  var numCards = numSymbols * 2;
-  var symbols = generateSymbols(numSymbols);
-  // create 1 game board
+  var symbolsCurrentGame = generateSymbolsForCurrentGame(numSymbols);
+
   var gameBoard = document.createElement("div");
-  gameBoard.style.border = "4px solid black";
-  gameBoard.style.backgroundColor = "lightblue";
+  gameBoard.classList.add("gameBoard");
+
+  var turnCounter = document.createElement("div");
+  turnCounter.classList.add("turnCounter");
+
+  var resetButton = document.createElement("button");
+  resetButton.innerHTML = "Reset Game";
+  resetButton.classList.add("resetButton");
+  resetButton.addEventListener("click", resetGame);
+
+  document.getElementsByClassName("turnCounter").innerHTML = "Turns: " + turns;
+  turnCounter.innerHTML = "Turns: " + turns;
+
+  var headerContainer = document.createElement("div");
+  headerContainer.classList.add("headerContainer");
+  headerContainer.appendChild(turnCounter);
+  headerContainer.appendChild(resetButton);
+
+  document.body.appendChild(headerContainer);
   document.body.appendChild(gameBoard);
 
-  createCards(numSymbols, symbols, gameBoard);
+  createCards(numSymbols, symbolsCurrentGame);
+  var shuffledCards = shuffleCards(cards);
+  shuffledCards.forEach((item) => gameBoard.appendChild(item))
+
 }
 
+function generateSymbolsForCurrentGame(numSymbols) {
+  var tempSymbols = [];
 
-function createCards(numSymbols, symbols, gameBoard) {
-  // create 2 cards for each symbol
+  // get random symbol and push it onto tempSymbols list
+  for (var i = 0; i < numSymbols; i++) {
+    var symbolToAdd = getRandomSymbolFromSet(symbolSet)
+    tempSymbols.push(symbolToAdd);
+
+    // remove the symbol from the list so each symbol is only used once
+    symbolSet.splice(symbolSet.indexOf(symbolToAdd), 1);
+  }
+  return tempSymbols;
+}
+
+// get random symbol
+function getRandomSymbolFromSet (list) {
+  return list[Math.floor((Math.random()*list.length))];
+}
+
+function createCards(numSymbols, symbolsCurrentGame) {
+  // create 2 cards for each symbol using each symbol only once
   for (var i = 0; i < numSymbols; i++) {
     var card = document.createElement("div");
-    card.style.border = "2px solid purple";
-    card.style.width = "50px";
+    var card2 = document.createElement("div");
+
+    // add class to card
     card.classList.add("card");
-    card.innerHTML = symbols[0];
-    gameBoard.appendChild(card);
+    // add listener to card
+    card.addEventListener("click", function() {
+      this.classList.add("flipped");
+      flippedCardsThisTurn.push(this.id)
+      flipCards()
+    })
+
+    card2.classList.add("card");
+
+    // do I care about ids?
+    card.setAttribute("id", i)
+    card2.setAttribute("id", i + 10)
+
+    card2.addEventListener("click", function() {
+      this.classList.add("flipped");
+      flippedCardsThisTurn.push(this.id)
+      flipCards()
+    })
+
+    var pElement = document.createElement("p")
+    var pElement2 = document.createElement("p")
+    // put symbol on card
+    pElement.innerHTML = symbolsCurrentGame[i];
+    // pElement.classList.add(symbolsCurrentGame[i])
+    pElement2.innerHTML = symbolsCurrentGame[i];
+    card.appendChild(pElement)
+    card2.appendChild(pElement2)
+
+    // add cards to array
+    cards.push(card);
+    cards.push(card2);
+  }
+
+}
+
+// shuffle cards
+function shuffleCards(cards) {
+  var shuffledCards = [];
+
+  while (cards.length > 0) {
+    var randomIndex = Math.floor(Math.random() * cards.length);
+    shuffledCards.push(cards[randomIndex]);
+    cards.splice(randomIndex, 1);
+  }
+
+  return shuffledCards
+}
+
+// =============================================== MANAGE GAME LOGIC ===============================================
+
+// Each turn, user flips 2 cards. On second flip, check for match. If match, keep cards flipped. If no match, flip cards back over.
+// If all cards are flipped, user wins.
+function flipCards() {
+  // increment flips each time called
+  flips++
+  // check if 2 cards are flipped
+  if (flips === 2) {
+    turns++
+    checkForMatch();
+
+    // reset flips
+    flips = 0;
   }
 }
-// TODO: (10 points) Assign a random symbol to each card
-//    - Find a way to assign a symbol from the set of available symbols to each card
-//    - The symbol assignment should be randomized!
-//    - The symbol should not appear in the user interface at the beginning of the game
-//    - However, it does not matter if the symbol is viewable in the source code
-//    - Some potential solutions for associating a symbol with a card may include:
-//      - An object that serves as a lookup table
-//      - Setting the value as a custom attribute
-//      - Perhaps creating an object model that drives your game
-//      - Or… any other scheme that you can come up with
 
-function generateSymbols(numSymbols) {
-  var symbols = "!@#$%^&*";
-  var symbolArray = symbols.split("");
-  var gameSymbols = [];
-  for (var i = 0; i < numSymbols; i++) {
-    var symbol = symbolArray[i];
-    gameSymbols.push(symbol);
-    gameSymbols.push(symbol);
+// check for match
+function checkForMatch(card1, card2) {
+  // find the flipped card elements
+  var flipped1 = document.getElementById(flippedCardsThisTurn[0])
+  var flipped2 = document.getElementById(flippedCardsThisTurn[1])
+
+  // update turn counter
+  document.getElementsByClassName("turnCounter")[0].innerHTML = "Turns: " + turns;
+
+  // check if the cards match
+  if ((flipped1.firstChild.textContent === flipped2.firstChild.textContent) && (flipped1.id !== flipped2.id)) {
+
+    // update matches counter
+    matches--;
+
+    // check for win
+    if (matches === 0) {
+      document.getElementsByClassName("gameBoard")[0].style.display = "none";
+      document.getElementById("winningScreen").style.display = "block";
+      document.getElementById("winningScreenButton").style.display = "block";
+      document.getElementsByClassName("headerContainer")[0].remove();
+
+      // confirm("You Win! Would you like to play again?")
+    }
+  } else {
+    setTimeout(function() {
+      flipped1.classList.remove("flipped");
+      flipped2.classList.remove("flipped");
+    }, 500)
   }
-  return gameSymbols;
+
+  // reset flipped cards each turn
+  flippedCardsThisTurn = []
+}
+
+function resetGame() {
+  // reset all variables
+  cards = []
+  flippedCardsThisTurn = []
+  flips = 0;
+  matches = 0;
+  numSymbols = 0;
+  symbolSet = ['!', '@', '#', '$', '%', '^', '&', '*'];
+  turns = 0;
+
+  // show start form again
+  if (document.getElementsByClassName("headerContainer")[0] !== undefined) {
+    document.getElementsByClassName("headerContainer")[0].remove();
+  }
+
+  // remove game board
+  document.getElementsByClassName("gameBoard")[0].remove();
+  document.getElementById("startForm").style.display = "block";
+  document.getElementById("winningScreen").style.display = "none";
+  document.getElementById("winningScreenButton").style.display = "none";
 }
 
 
-// TODO:  (5 points) Allow the user to click on cards
-//    - Assign an event listener to each card
-//    - When a card is clicked show the card's symbol
-//      - Either add a text node to the card
-//      - Or use CSS
-//        - If you're using CSS, only manipulate the classes, don't assign styles directly
-//        - Some options for toggling classes include:
-//          - classListLinks to an external site.
-//          - setAttributeLinks to an external site.
-//    - Do not allow more than two flipped cards at once
 
 
-// TODO: (5 points) Handle two consecutive clicks / two flipped cards
-//    - If there are two cards flipped after two clicks
-//      - If they don't match, flip them back so that the symbols don't show
-//      - If they do match, leave them around so that the symbols remain revealed
-//    - If there's only one card flipped, allow another card to be flipped
-//    - Again there are matches that are already flipped, don't unflip them
+// =============================================== STYLE SHEET =====================================================
 
 
-// TODO: (5 points) Keep track of the number of flip pairs
-//    - Create an element that shows you the number of guesses
-//    - Add a guess after every two cards are flipped
+// create an embedded stylesheet
+var style = document.createElement("style");
+style.innerHTML = `
+  body {
+    font-family: Arial, sans-serif;
+    background-color: lightsteelblue;
+  }
+  
+  #game {
+    text-align: center;
+  }
+  
+  #startForm button {
+    margin: 10px 40px;
+    background-color: steelblue;
+    border: 1px solid steelblue;
+    padding: 10px 10px;
+    color: white;
+  }
+  
+  #startForm input {
+    width: 40px;
+    margin: 0 10px;
+  }
+  
+  h1 {
+    text-align: center;
+    font-style: italic;
+    padding: 20px 0;
+    background-color: white;
+    width: 70%;
+    margin: 20px auto;
+  }
+  
+  .card {
+    display: inline-block;
+    border: 2px solid steelblue;
+    background-color: steelblue;
+    border-radius: 10px;
+    width: 80px;
+    padding: 0 5px;
+    height: 80px;
+    margin: 5px 20px;
+    text-align: center;
+    line-height: 50px;
+  }
+  
+  .flipped {
+    display: inline-block;
+    border: 2px solid dodgerblue;
+    background-color: white;
+  }
+  
+  .card p {
+    display: none;
+  }
+  
+  .flipped p {
+    display: table-cell;
+    text-align: center;
+  }
+  
+  .gameBoard {
+    width: 70%;
+    margin: auto;
+    padding: 20px 0;
+    border: 2px solid darkblue;
+    background-color: rgba(192,192,192, .7);
+    border-radius: 7px;
+    text-align: center;
+  }
+  
+  .headerContainer {
+    text-align: center;
+    display: flex;
+    justify-content: space-around;
+    margin: 20px 0;
+  }
+  
+  .winningScreen {
+    text-align: center;
+    font-size: 40px;
+    font-style: italic;
+    padding: 20px 0;
+  }
+  
+  .winningScreenButton {
+    text-align: center;
+    margin: 20px 0;
+  }
+`;
 
-// TODO: (5 points) Determine when someone wins
-//    - If all of the revealed cards are matches, end the game
-//    - Clear the board and show a thank you message
-//    - Add a play again button
+document.head.appendChild(style);
