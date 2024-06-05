@@ -297,15 +297,13 @@ style.innerHTML = `
     background-color: steelblue;
     border-radius: 10px;
     width: 80px;
-    padding: 0 5px;
     height: 80px;
-    margin: 5px 20px;
+    margin: 5px 12px;
     text-align: center;
-    line-height: 50px;
+    vertical-align: top;
   }
   
   .flipped {
-    display: inline-block;
     border: 2px solid dodgerblue;
     background-color: white;
   }
@@ -315,8 +313,9 @@ style.innerHTML = `
   }
   
   .flipped p {
-    display: table-cell;
+    display: block;
     text-align: center;
+    font-size: 20px;
   }
   
   .gameBoard {
