@@ -251,9 +251,6 @@ function resetGame() {
   document.getElementById("winningScreenButton").style.display = "none";
 }
 
-
-
-
 // =============================================== STYLE SHEET =====================================================
 
 
@@ -296,8 +293,8 @@ style.innerHTML = `
     border: 2px solid steelblue;
     background-color: steelblue;
     border-radius: 10px;
-    width: 80px;
-    height: 80px;
+    width: 100px;
+    height: 100px;
     margin: 5px 12px;
     text-align: center;
     vertical-align: top;
@@ -319,7 +316,7 @@ style.innerHTML = `
   }
   
   .gameBoard {
-    width: 70%;
+    width: 60%;
     margin: auto;
     padding: 20px 0;
     border: 2px solid darkblue;
